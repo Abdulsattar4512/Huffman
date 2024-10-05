@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+
+using namespace std;
+
+struct TreeNode {
+    char symbol;
+    int freq;
+    TreeNode* leftChild;
+    TreeNode* rightChild;
+
+    TreeNode(char c, int f) : symbol(c), freq(f), leftChild(nullptr), rightChild(nullptr) {}
+};
+
+struct NodeComparator {
+    bool operator()(TreeNode* lhs, TreeNode* rhs) {
+        return lhs->freq > rhs->freq;
+    }
+};
+
+void createHuffmanCodes(TreeNode* node, const string& path, vector<string>& codes) {
+    if (!node) return;
+
+    if (!node->leftChild && !node->rightChild) {
+        codes.push_back(path);
+    }
+
+    createHuffmanCodes(node->leftChild, path + "0", codes);
+    createHuffmanCodes(node->rightChild, path + "1", codes);
+}
+
+void generateHuffmanTree(const vector<char>& symbols, const vector<int>& frequencies) {
+    priority_queue<TreeNode*, vector<TreeNode*>, NodeComparator> minHeap;
+
+    for (size_t i = 0; i < symbols.size(); ++i) {
+        minHeap.push(new TreeNode(symbols[i], frequencies[i]));
+    }
+
+    while (minHeap.size() > 1) {
+        TreeNode* left = minHeap.top();
+        minHeap.pop();
+        TreeNode* right = minHeap.top();
+        minHeap.pop();
+
+        TreeNode* combined = new TreeNode('\0', left->freq + right->freq);
+        combined->leftChild = left;
+        combined->rightChild = right;
+        minHeap.push(combined);
+    }
+
+    TreeNode* root = minHeap.top();
+    minHeap.pop();
+
+    vector<string> huffmanCodes;
+    createHuffmanCodes(root, "", huffmanCodes);
+
+    for (const string& code : huffmanCodes) {
+        cout << code << endl;
+    }
+}
+
+int main() {
+    string characters = "abcdef";
+    vector<int> frequencies = {5, 9, 12, 13, 16, 45};
+    vector<char> symbols(characters.begin(), characters.end());
+
+    generateHuffmanTree(symbols, frequencies);
+
+    return 0;
+}
